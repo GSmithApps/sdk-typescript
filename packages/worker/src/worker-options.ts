@@ -58,6 +58,13 @@ export function isPathBundleOption(bundleOpt: WorkflowBundleOption): bundleOpt i
 /**
  * Options to configure the {@link Worker}
  *
+ * Required and/or common options include:
+ *
+ * - `workflowBundle` or `workflowsPath`
+ * - `activities`
+ * - `namespace`
+ * - `taskQueue`
+ *
  * Some options can significantly affect Worker's performance. Default settings are generally appropriate for
  * day-to-day development, but unlikely to be suitable for production use. We recommend that you explicitly set
  * values for every performance-related option on production deployment.

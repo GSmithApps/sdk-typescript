@@ -528,6 +528,10 @@ export type ActivityInterfaceFor<T> = {
  *   // ...
  * }
  * ```
+ *
+ * @externalReference
+ *
+ * Discussed in [TypeScript Workshop YouTube video](https://youtu.be/CeHSmv8oF_4?si=pYNUUsk1XByQ9xAJ&t=1218).
  */
 export function proxyActivities<A = UntypedActivities>(options: ActivityOptions): ActivityInterfaceFor<A> {
   if (options === undefined) {
@@ -989,7 +993,11 @@ export function uuid4(): string {
 /**
  * Patch or upgrade workflow code by checking or stating that this workflow has a certain patch.
  *
+ * The main mechanism for Workflow Versioning.
+ *
  * See {@link https://docs.temporal.io/typescript/versioning | docs page} for info.
+ *
+ * Here is an initial explanation, and there is a more detailed example below:
  *
  * If the workflow is replaying an existing history, then this function returns true if that
  * history was produced by a worker which also had a `patched` call with the same `patchId`.
@@ -1002,6 +1010,70 @@ export function uuid4(): string {
  *
  * @param patchId An identifier that should be unique to this patch. It is OK to use multiple
  * calls with the same ID, which means all such calls will always return the same value.
+ *
+ * @example
+ * if (patched('v3')) {
+ *     // This is the newest version of the code.
+ *
+ *     // The above patched statement following will do
+ *     // one of the following three things:
+ *
+ *     // 1. If the execution is not Replaying, it will evaluate
+ *     //    to True and write a Marker Event to the history
+ *     //    with a patch id v3. This code block will run.
+ *     // 2. If the execution is Replaying, and the original
+ *     //    run put a Patch ID v3 at this location in the event
+ *     //    history, it will evaluate to True, and this code block
+ *     //    will run.
+ *     // 3. If the execution is Replaying, and the original
+ *     //    run has a Patch ID other than v3 at this location in the event
+ *     //    history, it will evaluate to False, and this code block won't
+ *     //    run.
+ * } else if (patched('v2')) {
+ *     // This is the second version of the code.
+ *
+ *     // The above patched statement following will do
+ *     // one of the following three things:
+ *
+ *     // 1. If the execution is not Replaying, the execution
+ *     //    won't get here because the first patched statement
+ *     //    will be True.
+ *     // 2. If the execution is Replaying, and the original
+ *     //    run put a Patch ID v2 marker at this location in the event
+ *     //    history, it will evaluate to True, and this code block
+ *     //    will run.
+ *     // 3. If the execution is Replaying, and the original
+ *     //    run has a Patch ID other than v2 at this location in the event
+ *     //    history, or doesn't have a patch marker at this location in the event
+ *     //    history, it will evaluate to False, and this code block won't
+ *     //    run.
+ * } else {
+ *     // This is the original version of the code.
+ *     //
+ *     // The above patched statement following will do
+ *     // one of the following three things:
+ *     //
+ *     // 1. If the execution is not Replaying, the execution
+ *     //    won't get here because the first patched statement
+ *     //    will be True.
+ *     // 2. If the execution is Replaying, and the original
+ *     //    run had a patch marker v3 or v2 at this location in the event
+ *     //    history, the execution
+ *     //    won't get here because the first or second patched statement
+ *     //    will be True (respectively).
+ *     // 3. If the execution is Replaying, and condition 2
+ *     //    doesn't hold, then it will run this code.
+ * }
+ * @example
+ * //And here is an anti-example of what not to do:
+ * if (patched('v2')) {
+ *     // This is bad because when doing an original execution (i.e. not replaying),
+ *     // all patched statements evaluate to True (and put a marker
+ *     // in the event history), which means that new executions
+ *     // will use v2, and miss v3 below
+ * }
+ * else if (patched('v3')) {}
+ * else {}
  */
 export function patched(patchId: string): boolean {
   const activator = assertInWorkflowContext(
@@ -1111,10 +1183,13 @@ export function defineUpdate<Ret, Args extends any[] = [], Name extends string =
 }
 
 /**
- * Define a signal method for a Workflow.
+ * Define a {@link SignalDefinition} interface for Workflows.
  *
  * A definition is used to register a handler in the Workflow via {@link setHandler} and to signal a Workflow using a {@link WorkflowHandle}, {@link ChildWorkflowHandle} or {@link ExternalWorkflowHandle}.
  * A definition can be reused in multiple Workflows.
+ *
+ * The query definition/interface's purpose is to provide typing
+ * for query handling definitions.
  */
 export function defineSignal<Args extends any[] = [], Name extends string = string>(
   name: Name
@@ -1126,10 +1201,13 @@ export function defineSignal<Args extends any[] = [], Name extends string = stri
 }
 
 /**
- * Define a query method for a Workflow.
+ * Define a {@link QueryDefinition} interface for Workflows.
  *
  * A definition is used to register a handler in the Workflow via {@link setHandler} and to query a Workflow using a {@link WorkflowHandle}.
  * A definition can be reused in multiple Workflows.
+ *
+ * The query definition/interface's purpose is to provide typing
+ * for query handling definitions.
  */
 export function defineQuery<Ret, Args extends any[] = [], Name extends string = string>(
   name: Name
