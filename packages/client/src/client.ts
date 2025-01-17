@@ -29,6 +29,10 @@ export type LoadedClientOptions = LoadedWithDefaults<ClientOptions>;
 
 /**
  * High level SDK client.
+ *
+ * One common use case of the Client is to use the {@link workflow} property.
+ * This returns a {@link WorkflowClient} object, which
+ * can be used to start and interact with Workflows.
  */
 export class Client extends BaseClient {
   public readonly options: LoadedClientOptions;

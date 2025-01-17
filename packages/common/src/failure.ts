@@ -148,6 +148,11 @@ export class ServerFailure extends TemporalFailure {
  * In Workflows, if you throw a non-`ApplicationFailure`, the Workflow Task will fail and be retried. If you throw an
  * `ApplicationFailure`, the Workflow Execution will fail.
  *
+ * In Workflows, if you need to raise an error from Workflow Definition code to fail the Workflow, raise an `ApplicationFailure`.
+ * If you let some other type of Temporal Error be raised, it will also Fail the Workflow Execution.
+ * If a different, non-Temporal error is raised in the Workflow, it will
+ * {@link https://docs.temporal.io/encyclopedia/retry-policies | fail the Workflow Task and retry it indefinitely} .
+ *
  * In Activities, you can either throw an `ApplicationFailure` or another `Error` to fail the Activity Task. In the
  * latter case, the `Error` will be converted to an `ApplicationFailure`. The conversion is done as following:
  *
@@ -310,6 +315,9 @@ export class TimeoutFailure extends TemporalFailure {
  * For example, if an Activity timed out, the cause will be a {@link TimeoutFailure}.
  *
  * This exception is expected to be thrown only by the framework code.
+ * In contrast, when explicitly throwing exceptions from application code, use {@link ApplicationFailure}.
+ * If an Application Failure is thrown in an Activity, Temporal will automaticaly wrap it in an Activity Failure
+ * and raise that in the Workflow definition code at the Activity's call site.
  */
 @SymbolBasedInstanceOfError('ActivityFailure')
 export class ActivityFailure extends TemporalFailure {

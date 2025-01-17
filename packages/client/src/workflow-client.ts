@@ -203,7 +203,8 @@ export interface WorkflowHandle<T extends Workflow = Workflow> extends BaseWorkf
   /**
    * Query a running or completed Workflow.
    *
-   * @param def a query definition as returned from {@link defineQuery} or query name (string)
+   * @param def a query definition as returned from {@link defineQuery} or query name (string).
+   * Using a query definition instead of a string helps with type inference.
    *
    * @example
    * ```ts
@@ -486,6 +487,14 @@ export class WithStartWorkflowOperation<T extends Workflow> {
  *
  * Typically this client should not be instantiated directly, instead create the high level {@link Client} and use
  * {@link Client.workflow} to interact with Workflows.
+ *
+ * Typical usage includes:
+ *
+ * - {@link start}
+ * - {@link execute}
+ * - {@link getHandle}
+ *
+ * Discussed in [TypeScript Workshop YouTube video](https://youtu.be/CeHSmv8oF_4?si=pYNUUsk1XByQ9xAJ&t=3417).
  */
 export class WorkflowClient extends BaseClient {
   public readonly options: LoadedWorkflowClientOptions;
@@ -554,6 +563,9 @@ export class WorkflowClient extends BaseClient {
 
   /**
    * Start a new Workflow execution.
+   *
+   * This is asynchronous/nonblocking. See {@link execute} for
+   * synchronous/blocking workflow execution calls.
    *
    * @returns a {@link WorkflowHandle} to the started Workflow
    */
@@ -746,6 +758,9 @@ export class WorkflowClient extends BaseClient {
 
   /**
    * Start a new Workflow execution, then await for its completion and return that Workflow's result.
+   *
+   * This is synchronous/blocking. See {@link start} for
+   * asynchronous/nonblocking workflow calls.
    *
    * @returns the result of the Workflow execution
    */
